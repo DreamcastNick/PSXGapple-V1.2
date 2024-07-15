@@ -1,0 +1,4 @@
+1 xa sunshine/Voices.xa 1 0
+1 xa sunshine/Inst.xa 1 1
+1 xa left-unchecked/Voices.xa 1 2
+1 xa left-unchecked/Inst.xa 1 3

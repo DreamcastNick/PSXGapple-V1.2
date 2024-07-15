@@ -1,0 +1,4 @@
+1 xa cell/Voices.xa 1 0
+1 xa cell/Inst.xa 1 1
+1 xa ticking/Voices.xa 1 2
+1 xa ticking/Inst.xa 1 3

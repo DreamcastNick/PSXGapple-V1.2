@@ -1,0 +1,4 @@
+1 xa theft/Voices.xa 1 0
+1 xa theft/Inst.xa 1 1
+1 xa too-shiny/Voices.xa 1 2
+1 xa too-shiny/Inst.xa 1 3

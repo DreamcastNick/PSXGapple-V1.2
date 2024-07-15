@@ -1,0 +1,60 @@
+all: \
+	iso/menu/menu.arc \
+	iso/menu/backgrounds/back.arc \
+	iso/menu/loading.tim \
+	iso/icon16.tim \
+	iso/font/fonts.tim \
+	iso/stage/note4k.tim \
+	iso/stage/note5k.tim \
+	iso/stage/note6k.tim \
+	iso/stage/note7k.tim \
+	iso/stage/note9k.tim \
+	iso/stage/type4k.tim \
+	iso/stage/type5k.tim \
+	iso/stage/type6k.tim \
+	iso/stage/type7k.tim \
+	iso/stage/type9k.tim \
+	iso/stage/hud0.tim \
+	iso/stage/grid0.tim \
+	iso/stage/gridanim.tim \
+	iso/stage/hudextra.tim \
+	iso/bf/main.arc \
+	iso/bf/dead.arc \
+	iso/dad/main.arc \
+	iso/disrupt/main.arc \
+	iso/gf/main.arc \
+	iso/gf/tut.arc \
+	iso/gf/speaker.tim \
+	iso/void0/back.arc \
+	iso/week1/back.arc \
+
+iso/%.tim: iso/%.png
+	tools/funkintimconv/funkintimconv $@ $<
+
+iso/%.arc:
+	tools/funkinarcpak/funkinarcpak $@ $^
+
+# Menu
+iso/menu/menu.arc: iso/menu/ng.tim iso/menu/story.tim iso/menu/title.tim iso/menu/icon.tim
+iso/menu/backgrounds/back.arc: iso/menu/backgrounds/back0.tim iso/menu/backgrounds/back1.tim iso/menu/backgrounds/back2.tim iso/menu/backgrounds/back3.tim iso/menu/backgrounds/back4.tim iso/menu/backgrounds/back5.tim iso/menu/backgrounds/back6.tim iso/menu/backgrounds/back7.tim iso/menu/backgrounds/back8.tim iso/menu/backgrounds/back9.tim iso/menu/backgrounds/back10.tim iso/menu/backgrounds/back11.tim iso/menu/backgrounds/back12.tim iso/menu/backgrounds/back13.tim iso/menu/backgrounds/back14.tim
+
+
+# BF
+iso/bf/main.arc: iso/bf/bf0.tim iso/bf/bf1.tim iso/bf/bf2.tim iso/bf/bf3.tim iso/bf/bf4.tim iso/bf/bf5.tim iso/bf/bf6.tim iso/bf/dead0.tim
+iso/bf/dead.arc: iso/bf/dead1.tim iso/bf/dead2.tim iso/bf/retry.tim
+
+# Dad
+iso/dad/main.arc: iso/dad/idle0.tim iso/dad/idle1.tim iso/dad/left.tim iso/dad/down.tim iso/dad/up.tim iso/dad/right.tim
+
+# Disruption Bambi
+iso/disrupt/main.arc: iso/disrupt/idle0.tim iso/disrupt/idle1.tim iso/disrupt/idle2.tim iso/disrupt/idle3.tim iso/disrupt/idle4.tim iso/disrupt/left0.tim iso/disrupt/left1.tim iso/disrupt/left2.tim iso/disrupt/left3.tim iso/disrupt/down0.tim iso/disrupt/down1.tim iso/disrupt/down2.tim iso/disrupt/down3.tim iso/disrupt/up0.tim iso/disrupt/up1.tim iso/disrupt/up2.tim iso/disrupt/up3.tim iso/disrupt/right0.tim iso/disrupt/right1.tim iso/disrupt/right2.tim iso/disrupt/right3.tim
+
+# GF
+iso/gf/main.arc: iso/gf/gf0.tim iso/gf/gf1.tim iso/gf/gf2.tim
+iso/gf/tut.arc: iso/gf/tut0.tim iso/gf/tut1.tim
+
+# Week 0
+iso/void0/back.arc: iso/void0/back0.tim
+
+# Week 1
+iso/week1/back.arc: iso/week1/back0.tim iso/week1/back1.tim

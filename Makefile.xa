@@ -1,0 +1,57 @@
+all: \
+  iso/music/menu.xa \
+  iso/music/1.xa \
+  iso/music/2.xa \
+  iso/music/3.xa \
+  iso/music/4.xa \
+  iso/music/5.xa \
+  iso/music/6.xa \
+  iso/music/7.xa \
+  iso/music/8.xa \
+  iso/music/9.xa \
+  iso/music/10.xa \
+  iso/music/11.xa \
+  iso/music/12.xa \
+  iso/music/13.xa \
+  iso/music/14.xa \
+  iso/music/15.xa \
+  iso/music/16.xa \
+  iso/music/17.xa \
+  iso/music/18.xa \
+  iso/music/19.xa \
+  iso/music/20.xa \
+  iso/music/21.xa \
+  iso/music/22.xa \
+
+# XA converts
+iso/music/%.xa: iso/music/%.ogg
+	tools/psxavenc/psxavenc -f 37800 -t xa -b 4 -c 2 -F 1 -C 0 $< $@
+iso/music/%.xa:
+	tools/xainterleave/xainterleave $@
+
+# XA interleaves for Disc 1
+iso/music/menu.xa: iso/music/freaky.xa iso/music/gameover.xa
+iso/music/1.xa: iso/music/disruption/Inst.xa iso/music/disruption/Voices.xa iso/music/applecore/Inst.xa iso/music/applecore/Voices.xa
+iso/music/2.xa: iso/music/disability/Inst.xa iso/music/disability/Voices.xa iso/music/wireframe/Inst.xa iso/music/wireframe/Voices.xa
+iso/music/3.xa: iso/music/algebra/Inst.xa iso/music/algebra/Voices.xa iso/music/deformation/Inst.xa iso/music/deformation/Voices.xa
+iso/music/4.xa: iso/music/ferocious/Inst.xa iso/music/ferocious/Voices.xa
+
+# XA interleaves for Disc 2
+iso/music/5.xa: iso/music/sugar-rush/Inst.xa iso/music/sugar-rush/Voices.xa iso/music/gift-card/Inst.xa iso/music/gift-card/Voices.xa
+iso/music/6.xa: iso/music/the-big-dingle/Inst.xa iso/music/the-big-dingle/Voices.xa iso/music/dale/Inst.xa iso/music/dale/Voices.xa
+iso/music/7.xa: iso/music/origin/Inst.xa iso/music/origin/Voices.xa iso/music/apprentice/Inst.xa iso/music/apprentice/Voices.xa
+iso/music/8.xa: iso/music/resumed/Inst.xa iso/music/resumed/Voices.xa iso/music/ready-loud/Inst.xa iso/music/ready-loud/Voices.xa
+iso/music/9.xa: iso/music/bookworm/Inst.xa iso/music/bookworm/Voices.xa iso/music/cuberoot/Inst.xa iso/music/cuberoot/Voices.xa
+iso/music/10.xa: iso/music/alternate/Inst.xa iso/music/alternate/Voices.xa iso/music/unhinged/Inst.xa iso/music/unhinged/Voices.xa
+iso/music/11.xa: iso/music/theft/Inst.xa iso/music/theft/Voices.xa iso/music/too-shiny/Inst.xa iso/music/too-shiny/Voices.xa
+iso/music/12.xa: iso/music/tantalum/Inst.xa iso/music/tantalum/Voices.xa iso/music/strawberry/Inst.xa iso/music/strawberry/Voices.xa
+iso/music/13.xa: iso/music/keyboard/Inst.xa iso/music/keyboard/Voices.xa iso/music/sillier/Inst.xa iso/music/sillier/Voices.xa
+iso/music/14.xa: iso/music/wheels/Inst.xa iso/music/wheels/Voices.xa iso/music/poopers/Inst.xa iso/music/poopers/Voices.xa
+iso/music/15.xa: iso/music/the-boopadoop-song/Inst.xa iso/music/the-boopadoop-song/Voices.xa
+iso/music/16.xa: iso/music/og/Inst.xa iso/music/og/Voices.xa iso/music/sick-tricks/Inst.xa iso/music/sick-tricks/Voices.xa
+iso/music/17.xa: iso/music/galactic/Inst.xa iso/music/galactic/Voices.xa
+iso/music/18.xa: iso/music/cell/Inst.xa iso/music/cell/Voices.xa iso/music/ticking/Inst.xa iso/music/ticking/Voices.xa
+iso/music/19.xa: iso/music/recovered-project/Inst.xa iso/music/recovered-project/Voices.xa iso/music/dave-x-bambi-shipping-cute/Inst.xa iso/music/dave-x-bambi-shipping-cute/Voices.xa
+iso/music/20.xa: iso/music/slices/Inst.xa iso/music/slices/Voices.xa
+iso/music/21.xa: iso/music/sunshine/Inst.xa iso/music/sunshine/Voices.xa iso/music/left-unchecked/Inst.xa iso/music/left-unchecked/Voices.xa
+iso/music/22.xa: iso/music/thunderstorm/Inst.xa iso/music/thunderstorm/Voices.xa iso/music/collision/Inst.xa iso/music/collision/Voices.xa
