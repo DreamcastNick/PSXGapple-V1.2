@@ -117,14 +117,14 @@ void StageInfo_Draw()
         stage.stage_def->composer,
         FIXED_DEC(blockx, 1),
         FIXED_DEC(-50, 1),
-        FontAlign_Left
+        FontAlign_Right
     );
 
     stage.font_cdr.draw(&stage.font_cdr,
         stage.stage_def->credits,
         FIXED_DEC(blockx, 1),
         FIXED_DEC(-40, 1),
-        FontAlign_Left
+        FontAlign_Right
     );
 
     // Define block source and destination rectangles
@@ -138,28 +138,30 @@ void StageInfo_Draw()
 
     // Reset block position when stage reloads
     if (stage.song_step == -29) {
-        blockx = -360;   // Initial x position off-screen to the left
+        blockx = -480;   // Initial x position off-screen to the left
         blockx2 = -480;  // Initial x2 position off-screen to the left
     }
 
-    // Determine block movement based on song step
-    if (stage.song_step >= 0 && stage.song_step <= 24) {
-        // Slide in towards coordinates 180
-        blockx = -360 + (stage.song_step * 12) + 12;  // Adjusted slide in distance
-        blockx2 = -480 + (stage.song_step * 12); // Adjusted slide in distance
-    }
-    else if (stage.song_step >= 48 && stage.song_step <= 60) {
-        // Slide out towards coordinates 480
-        blockx = -240 - ((stage.song_step - 48) * 12) + 12; // Adjusted slide out distance
-        blockx2 = -240 - ((stage.song_step - 48) * 12); // Adjusted slide out distance
-    }
+	// Determine block movement based on song step
+	if (stage.song_step >= 0 && stage.song_step <= 24) {
+		// Slide in towards coordinates -10
+		blockx = -480 + (stage.song_step * ((-10 + 480) / 24));  // Adjusted slide in distance to reach -10
+		blockx2 = -480 + (stage.song_step * 12); // Existing slide in distance remains unchanged
+	}
+
+	// Determine block movement based on song step
+	else if (stage.song_step >= 48 && stage.song_step <= 60) {
+		// Slide out towards coordinates -480
+		blockx = -10 + ((stage.song_step - 25) * ((-480 + 10) / 24));  // Adjusted slide out distance to reach -480
+		blockx2 = -240 - ((stage.song_step - 48) * 12); // Existing movement can remain or be adjusted as needed
+	}
 
     // Ensure block movement is bounded within limits
-    if (blockx > -240) {
-        blockx = -240;
+    if (blockx > -10) {
+        blockx = -10;
     }
-    if (blockx < -360) {
-        blockx = -360;
+    if (blockx < -480) {
+        blockx = -480;
     }
     if (blockx2 > -240) {
         blockx2 = -240;

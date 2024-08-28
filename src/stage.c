@@ -19,6 +19,7 @@
 
 #include "disc_swap_disc1.h"
 #include "disc_swap_disc2.h"
+#include "disc_swap_disc3.h"
 
 #include "tween.h"
 
@@ -1109,15 +1110,15 @@ void Stage_DrawHealth(s16 health, u16 health_i[2][4], s8 ox, boolean animated, u
     RECT_FIXED dst = {
         hx + ox * FIXED_DEC(16, 1) - FIXED_DEC(16, 1),
         FIXED_DEC(70, 1),
-        src.w << FIXED_SHIFT,
-        src.h << FIXED_SHIFT
+        src.w << FIXED_SHIFT,  // Apply scale to width
+        src.h << FIXED_SHIFT   // Apply scale to height
     };
 
     if (stage.prefs.downscroll)
         dst.y = -dst.y - FIXED_DEC(44, 1);
-	
-	dst.y += stage.noteshakey;
-	dst.x += stage.noteshakex;
+
+    dst.y += stage.noteshakey;
+    dst.x += stage.noteshakex;
 
     if (stage.prefs.mode == StageMode_Swap) {
         dst.x += dst.w;
@@ -1127,7 +1128,6 @@ void Stage_DrawHealth(s16 health, u16 health_i[2][4], s8 ox, boolean animated, u
     // Draw health icon
     Stage_DrawTex(&stage.tex_hud1, &src, &dst, FIXED_MUL(stage.bump, stage.sbump), stage.camera.hudangle);
 }
-
 
 static void Stage_DrawHealthBar(s16 x, s32 color)
 {    
