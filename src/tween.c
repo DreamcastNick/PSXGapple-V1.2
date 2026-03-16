@@ -24,8 +24,22 @@ static u32 FlxTween_GetCurrentTimeMs(void)
 // Function to initiate a tween for fixed-point values
 void FlxTween_tweenFixed(fixed_t *target, fixed_t to, u32 duration, FlxEase ease)
 {
+    int i;
+
     if (target == NULL || ease == NULL)
         return;
+
+    // Replace any existing tween driving this target so it can smoothly retarget.
+    for (i = 0; i < numActiveTweens; ++i)
+    {
+        if (activeTweens[i].target == target)
+        {
+            for (; i < numActiveTweens - 1; ++i)
+                activeTweens[i] = activeTweens[i + 1];
+            numActiveTweens--;
+            break;
+        }
+    }
 
     if (numActiveTweens < MAX_TWEENS)
     {
