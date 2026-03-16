@@ -13,8 +13,8 @@ typedef struct {
     fixed_t *target;
     fixed_t from;
     fixed_t to;
-    u32 duration;
-    u32 startTime;
+    fixed_t duration;
+    fixed_t startTime;
     FlxEase ease;
 } FlxTween;
 
@@ -26,8 +26,8 @@ extern FlxTween activeTweens[MAX_TWEENS];
 extern int numActiveTweens;
 
 // Function prototypes
-void FlxTween_tweenFixed(fixed_t *target, fixed_t to, u32 duration, FlxEase ease);
-void FlxTween_angle(fixed_t *angle, fixed_t to, u32 duration, FlxEase ease);
+void FlxTween_tweenFixed(fixed_t *target, fixed_t to, fixed_t duration, FlxEase ease);
+void FlxTween_angle(fixed_t *angle, fixed_t to, fixed_t duration, FlxEase ease);
 fixed_t FlxEase_quadOut(fixed_t t, fixed_t b, fixed_t c, fixed_t d);
 void updateTweens(void);
 
