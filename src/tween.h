@@ -2,11 +2,11 @@
 #define PSXF_GUARD_TWEEN_H
 
 #include "fixed.h" // Include your fixed-point arithmetic definitions
-#include "stage.h"
+#include "psx.h"
 #include <stddef.h> // For NULL definition
 
 // Example easing function type definition
-typedef float (*FlxEase)(float, float, float, float);
+typedef fixed_t (*FlxEase)(fixed_t, fixed_t, fixed_t, fixed_t);
 
 // Define FlxTween structure for fixed-point values
 typedef struct {
@@ -28,6 +28,7 @@ extern int numActiveTweens;
 // Function prototypes
 void FlxTween_tweenFixed(fixed_t *target, fixed_t to, u32 duration, FlxEase ease);
 void FlxTween_angle(fixed_t *angle, fixed_t to, u32 duration, FlxEase ease);
+fixed_t FlxEase_quadOut(fixed_t t, fixed_t b, fixed_t c, fixed_t d);
 void updateTweens(void);
 
-#endif // TWEEN_H
+#endif // PSXF_GUARD_TWEEN_H
