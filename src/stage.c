@@ -224,6 +224,7 @@ Stage stage;
 Debug debug;
 
 int drain = 0;
+static Note *stage_combined_notes = NULL;
 
 //Stage note functions
 static u16 Stage_GetNoteType(Note* note)
@@ -1976,25 +1977,25 @@ static void Stage_LoadChart(void)
 		//Use standard path convention
 		sprintf(chart_path, "\\STORY\\%d.%d%c.CHT;1", stage.stage_def->week, stage.stage_def->week_song, "ENH"[stage.stage_diff]);
 	}
+	if (stage_combined_notes != NULL)
+	{
+		Mem_Free(stage_combined_notes);
+		stage_combined_notes = NULL;
+	}
+
 	if (stage.chart_data != NULL)
 		Mem_Free(stage.chart_data);
 	stage.chart_data = IO_Read(chart_path);
 	u8 *chart_byte = (u8*)stage.chart_data;
 
-	if (stage.stage_id == StageId_1_2)
+	if (stage.special_chart_data != NULL)
 	{
-		if (stage.chart_data != NULL)
-			Mem_Free(stage.chart_data);
-		stage.chart_data = IO_Read(chart_path);
-		u8 *chart_byte = (u8*)stage.chart_data;
-
-		if (stage.special_chart_data != NULL)
-			Mem_Free(stage.special_chart_data);
-		stage.special_chart_data = IO_Read(chart_path2);
-		u8 *chart_byte2 = (u8*)stage.special_chart_data;
+		Mem_Free(stage.special_chart_data);
+		stage.special_chart_data = NULL;
 	}
-	
-	u8 *chart_byte2 = (u8*)stage.special_chart_data;
+
+	if (stage.stage_id == StageId_1_2)
+		stage.special_chart_data = IO_Read(chart_path2);
 	#ifdef PSXF_PC
 		//Get lengths
 		u16 note_off = chart_byte[0] | (chart_byte[1] << 8);
@@ -2051,48 +2052,51 @@ static void Stage_LoadChart(void)
 		//Directly use section and notes pointers
 		stage.sections = (Section*)(chart_byte + 4);
 		stage.notes = (Note*)(chart_byte + ((u16*)stage.chart_data)[1]);
+
 		for (Note *note = stage.notes; note->pos != 0xFFFF; note++)
 		{
 			stage.num_notes++;
 		}
-		if (stage.stage_id == StageId_1_2)
+
+		if (stage.stage_id == StageId_1_2 && stage.special_chart_data != NULL)
 		{
-			stage.sections = (Section*)(chart_byte + 4);
-			stage.notes = (Note*)(chart_byte + ((u16*)stage.chart_data)[1]);
-			
-			for (Note *note = (Note*)stage.chart_data; note->pos != 0xFFFF; note++)
+			u8 *special_chart_byte = (u8*)stage.special_chart_data;
+			Note *special_notes = (Note*)(special_chart_byte + ((u16*)stage.special_chart_data)[1]);
+			u32 base_num_notes = stage.num_notes;
+			u32 special_num_notes = 0;
+
+			for (Note *note = special_notes; note->pos != 0xFFFF; note++)
 			{
-				stage.num_notes++;
+				special_num_notes++;
 			}
 
-			if (stage.special_chart_data != NULL)
+			if (special_num_notes > 0)
 			{
-				u8 *chart_byte2 = (u8*)stage.special_chart_data;
-				Section *sections2 = (Section*)(chart_byte2 + 4);
-				Note *notes2 = (Note*)(chart_byte2 + ((u16*)stage.special_chart_data)[1]);
+				Note *combined_notes = (Note*)Mem_Alloc(sizeof(Note) * (base_num_notes + special_num_notes + 1));
+				stage_combined_notes = combined_notes;
 
-				for (Note *note = (Note*)stage.special_chart_data; note->pos != 0xFFFF; note++)
+				memcpy(combined_notes, stage.notes, sizeof(Note) * base_num_notes);
+				memcpy(combined_notes + base_num_notes, special_notes, sizeof(Note) * special_num_notes);
+
+				for (u32 i = 0; i < (base_num_notes + special_num_notes); i++)
 				{
-					stage.num_notes++;
+					for (u32 j = i + 1; j < (base_num_notes + special_num_notes); j++)
+					{
+						if (combined_notes[j].pos < combined_notes[i].pos)
+						{
+							Note temp = combined_notes[i];
+							combined_notes[i] = combined_notes[j];
+							combined_notes[j] = temp;
+						}
+					}
 				}
 
-				// Combine notes from both charts
-				// Assuming sections are the same for both charts
-				// Assuming num_notes is already updated for the first chart
-				size_t total_notes = stage.num_notes;
-				stage.num_notes = 0; // Reset num_notes for the combined chart
+				combined_notes[base_num_notes + special_num_notes].pos = 0xFFFF;
+				combined_notes[base_num_notes + special_num_notes].type = NOTE_FLAG_HIT;
+				combined_notes[base_num_notes + special_num_notes].is_opponent = 0;
 
-				// Allocate memory for combined notes
-				Note *combined_notes = (Note*)Mem_Alloc(sizeof(Note) * total_notes);
-
-				// Copy notes from the first chart
-				memcpy(combined_notes, stage.notes, sizeof(Note) * (total_notes - stage.num_notes));
-
-				// Copy notes from the second chart
-				memcpy(combined_notes + (total_notes - stage.num_notes), notes2, sizeof(Note) * stage.num_notes);
-
-				// Update stage notes to point to the combined notes
 				stage.notes = combined_notes;
+				stage.num_notes = base_num_notes + special_num_notes;
 			}
 		}
 	#endif
@@ -2418,6 +2422,11 @@ void Stage_Unload(void)
 	stage.back = NULL;
 	
 	//Unload stage data
+	if (stage_combined_notes != NULL)
+	{
+		Mem_Free(stage_combined_notes);
+		stage_combined_notes = NULL;
+	}
 	Mem_Free(stage.chart_data);
 	stage.chart_data = NULL;
 	if (stage.special_chart_data != NULL)
@@ -3265,6 +3274,11 @@ void Stage_Tick(void)
 			inctimer = false;
 			
 			//Unload stage data
+			if (stage_combined_notes != NULL)
+			{
+				Mem_Free(stage_combined_notes);
+				stage_combined_notes = NULL;
+			}
 			Mem_Free(stage.chart_data);
 			stage.chart_data = NULL;
 			if (stage.special_chart_data != NULL)
