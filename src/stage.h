@@ -292,6 +292,11 @@ typedef struct
 	} camera;
 	fixed_t bump, sbump;
 	
+	// Health icon bounce state
+	fixed_t icon_scale_p1_x, icon_scale_p1_y;
+	fixed_t icon_scale_p2_x, icon_scale_p2_y;
+	fixed_t icon_angle_p1, icon_angle_p2;
+	
 	StageBack *back;
 	
 	Character *player;
