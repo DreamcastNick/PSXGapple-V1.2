@@ -1078,10 +1078,53 @@ void Stage_BlendTexV2(Gfx_Tex *tex, const RECT *src, const RECT_FIXED *dst, fixe
 	Gfx_BlendTexV2(tex, src, &sdst, mode, opacity);
 }
 
+// Step-synced health icon bounce update (ported from Haxe behavior)
+static void Stage_UpdateHealthIconBounce(boolean playing)
+{
+	if (!playing || !(stage.flag & STAGE_FLAG_JUST_STEP))
+		return;
+
+	if ((stage.song_beat % stage.gf_speed) != 0)
+		return;
+
+	if ((stage.song_beat % (stage.gf_speed * 2)) == 0)
+	{
+		stage.icon_scale_p1_x = FIXED_DEC(11,10);
+		stage.icon_scale_p1_y = FIXED_DEC(8,10);
+		stage.icon_scale_p2_x = FIXED_DEC(11,10);
+		stage.icon_scale_p2_y = FIXED_DEC(13,10);
+
+		stage.icon_angle_p1 = FIXED_DEC(-15,1);
+		stage.icon_angle_p2 = FIXED_DEC(15,1);
+
+		FlxTween_angle(&stage.icon_angle_p1, 0, (u32)(FIXED_MUL(stage.step_time, FIXED_DEC(4000,13)) >> FIXED_SHIFT), FlxEase_quadOut);
+		FlxTween_angle(&stage.icon_angle_p2, 0, (u32)(FIXED_MUL(stage.step_time, FIXED_DEC(4000,13)) >> FIXED_SHIFT), FlxEase_quadOut);
+	}
+	else
+	{
+		stage.icon_scale_p1_x = FIXED_DEC(11,10);
+		stage.icon_scale_p1_y = FIXED_DEC(13,10);
+		stage.icon_scale_p2_x = FIXED_DEC(11,10);
+		stage.icon_scale_p2_y = FIXED_DEC(8,10);
+
+		stage.icon_angle_p2 = FIXED_DEC(-15,1);
+		stage.icon_angle_p1 = FIXED_DEC(15,1);
+
+		FlxTween_angle(&stage.icon_angle_p2, 0, (u32)(FIXED_MUL(stage.step_time, FIXED_DEC(4000,13)) >> FIXED_SHIFT), FlxEase_quadOut);
+		FlxTween_angle(&stage.icon_angle_p1, 0, (u32)(FIXED_MUL(stage.step_time, FIXED_DEC(4000,13)) >> FIXED_SHIFT), FlxEase_quadOut);
+	}
+
+	FlxTween_tweenFixed(&stage.icon_scale_p1_x, FIXED_UNIT, (u32)(FIXED_MUL(stage.step_time, FIXED_DEC(16,5)) >> FIXED_SHIFT), FlxEase_quadOut);
+	FlxTween_tweenFixed(&stage.icon_scale_p1_y, FIXED_UNIT, (u32)(FIXED_MUL(stage.step_time, FIXED_DEC(16,5)) >> FIXED_SHIFT), FlxEase_quadOut);
+	FlxTween_tweenFixed(&stage.icon_scale_p2_x, FIXED_UNIT, (u32)(FIXED_MUL(stage.step_time, FIXED_DEC(16,5)) >> FIXED_SHIFT), FlxEase_quadOut);
+	FlxTween_tweenFixed(&stage.icon_scale_p2_y, FIXED_UNIT, (u32)(FIXED_MUL(stage.step_time, FIXED_DEC(16,5)) >> FIXED_SHIFT), FlxEase_quadOut);
+}
+
 // Function to draw health icons with scaling and rotation
-void Stage_DrawHealth(s16 health, u16 health_i[2][4], s8 ox, boolean animated, u16 health_i_frames[][4], int frame_index) {
+void Stage_DrawHealth(s16 health, u16 health_i[2][4], s8 ox, boolean animated, u16 health_i_frames[][4], int frame_index, fixed_t icon_scale_x, fixed_t icon_scale_y, fixed_t icon_angle) {
     // Check if we should use 'dying' frame
     s8 dying;
+    s16 draw_icon_angle;
     if (ox < 0)
         dying = (health >= 18000);
     else
@@ -1092,27 +1135,34 @@ void Stage_DrawHealth(s16 health, u16 health_i[2][4], s8 ox, boolean animated, u
 
     RECT src;
     if (animated) {
-        src = (RECT) { 
-            health_i_frames[frame_index][0], 
-            health_i_frames[frame_index][1], 
-            health_i_frames[frame_index][2], 
-            health_i_frames[frame_index][3] 
+        src = (RECT) {
+            health_i_frames[frame_index][0],
+            health_i_frames[frame_index][1],
+            health_i_frames[frame_index][2],
+            health_i_frames[frame_index][3]
         };
     } else {
-        src = (RECT) { 
-            health_i[dying][0], 
-            health_i[dying][1], 
-            health_i[dying][2], 
-            health_i[dying][3] 
+        src = (RECT) {
+            health_i[dying][0],
+            health_i[dying][1],
+            health_i[dying][2],
+            health_i[dying][3]
         };
     }
+
+    fixed_t w = FIXED_MUL(src.w << FIXED_SHIFT, icon_scale_x);
+    fixed_t h = FIXED_MUL(src.h << FIXED_SHIFT, icon_scale_y);
 
     RECT_FIXED dst = {
         hx + ox * FIXED_DEC(16, 1) - FIXED_DEC(16, 1),
         FIXED_DEC(70, 1),
-        src.w << FIXED_SHIFT,  // Apply scale to width
-        src.h << FIXED_SHIFT   // Apply scale to height
+        w,
+        h
     };
+
+    // Keep icon anchored to center while scaling
+    dst.x -= (w - (src.w << FIXED_SHIFT)) >> 1;
+    dst.y -= (h - (src.h << FIXED_SHIFT)) >> 1;
 
     if (stage.prefs.downscroll)
         dst.y = -dst.y - FIXED_DEC(44, 1);
@@ -1126,7 +1176,8 @@ void Stage_DrawHealth(s16 health, u16 health_i[2][4], s8 ox, boolean animated, u
     }
 
     // Draw health icon
-    Stage_DrawTex(&stage.tex_hud1, &src, &dst, FIXED_MUL(stage.bump, stage.sbump), stage.camera.hudangle);
+    draw_icon_angle = icon_angle / 10000;
+    Stage_DrawTexRotate(&stage.tex_hud1, &src, &dst, (u8)draw_icon_angle, 0, 0, FIXED_MUL(stage.bump, stage.sbump), stage.camera.hudangle);
 }
 
 static void Stage_DrawHealthBar(s16 x, s32 color)
@@ -2331,6 +2382,9 @@ void Stage_Load(StageId id, StageDiff difficulty, boolean story)
 	
 	stage.bump = FIXED_UNIT;
 	stage.sbump = FIXED_UNIT;
+	stage.icon_scale_p1_x = stage.icon_scale_p1_y = FIXED_UNIT;
+	stage.icon_scale_p2_x = stage.icon_scale_p2_y = FIXED_UNIT;
+	stage.icon_angle_p1 = stage.icon_angle_p2 = 0;
 	
 	//Initialize stage according to mode
 	stage.note_swap = (stage.prefs.mode == StageMode_Swap) ? 4 : 0;
@@ -2859,6 +2913,9 @@ void Stage_Tick(void)
 			
 			StageInfo_Draw();
 			Events();
+
+			Stage_UpdateHealthIconBounce(playing);
+			updateTweens();
 			
 			//Handle bump
 			if ((stage.bump = FIXED_UNIT + FIXED_MUL(stage.bump - FIXED_UNIT, FIXED_DEC(95,100))) <= FIXED_DEC(1003,1000))
@@ -3110,13 +3167,13 @@ void Stage_Tick(void)
 					//Draw health heads
 					if (stage.stage_id == StageId_2_5)
 					{
-						Stage_DrawHealth(stage.player_state[0].health, stage.player->health_i, 1, false, stage.player->health_i, stage.player->icon_frame);
-						Stage_DrawHealth(stage.player_state[0].health, stage.opponent->health_i, -1, true, stage.opponent->health_i_frames, stage.opponent->icon_frame);
+						Stage_DrawHealth(stage.player_state[0].health, stage.player->health_i, 1, false, stage.player->health_i, stage.player->icon_frame, stage.icon_scale_p1_x, stage.icon_scale_p1_y, stage.icon_angle_p1);
+						Stage_DrawHealth(stage.player_state[0].health, stage.opponent->health_i, -1, true, stage.opponent->health_i_frames, stage.opponent->icon_frame, stage.icon_scale_p2_x, stage.icon_scale_p2_y, stage.icon_angle_p2);
 					}
 					else
 					{
-						Stage_DrawHealth(stage.player_state[0].health, stage.player->health_i, 1, false, stage.player->health_i, stage.player->icon_frame);
-						Stage_DrawHealth(stage.player_state[0].health, stage.opponent->health_i, -1, false, stage.opponent->health_i, stage.opponent->icon_frame);
+						Stage_DrawHealth(stage.player_state[0].health, stage.player->health_i, 1, false, stage.player->health_i, stage.player->icon_frame, stage.icon_scale_p1_x, stage.icon_scale_p1_y, stage.icon_angle_p1);
+						Stage_DrawHealth(stage.player_state[0].health, stage.opponent->health_i, -1, false, stage.opponent->health_i, stage.opponent->icon_frame, stage.icon_scale_p2_x, stage.icon_scale_p2_y, stage.icon_angle_p2);
 					}
 					
 					//Draw health bar
@@ -3228,6 +3285,9 @@ void Stage_Tick(void)
 			//Reset stage state
 			stage.flag = 0;
 			stage.bump = stage.sbump = FIXED_UNIT;
+			stage.icon_scale_p1_x = stage.icon_scale_p1_y = FIXED_UNIT;
+			stage.icon_scale_p2_x = stage.icon_scale_p2_y = FIXED_UNIT;
+			stage.icon_angle_p1 = stage.icon_angle_p2 = 0;
 			
 			//Change background colour to black
 			Gfx_SetClear(0, 0, 0);
