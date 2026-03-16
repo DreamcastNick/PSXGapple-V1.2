@@ -1078,17 +1078,10 @@ void Stage_BlendTexV2(Gfx_Tex *tex, const RECT *src, const RECT_FIXED *dst, fixe
 	Gfx_BlendTexV2(tex, src, &sdst, mode, opacity);
 }
 
-static u32 Stage_FixedSecondsToMs(fixed_t seconds)
-{
-	u32 ms = (u32)((((u64)seconds) * 1000) >> FIXED_SHIFT);
-	return (ms == 0) ? 1 : ms;
-}
-
 // Step-synced health icon bounce update (ported from Haxe behavior)
 static void Stage_UpdateHealthIconBounce(boolean playing)
 {
-	u32 angle_duration;
-	u32 scale_duration;
+	u32 tween_duration;
 
 	if (!playing || !(stage.flag & STAGE_FLAG_JUST_STEP))
 		return;
@@ -1096,8 +1089,12 @@ static void Stage_UpdateHealthIconBounce(boolean playing)
 	if (stage.gf_speed == 0 || (stage.song_beat % stage.gf_speed) != 0)
 		return;
 
-	angle_duration = Stage_FixedSecondsToMs(FIXED_MUL(stage.step_time, FIXED_DEC(4000,13)));
-	scale_duration = Stage_FixedSecondsToMs(FIXED_MUL(stage.step_time, FIXED_DEC(16,5)));
+	if (stage.last_bpm == 0)
+		return;
+
+	tween_duration = ((60000 / stage.last_bpm) / 4);
+	if (tween_duration == 0)
+		tween_duration = 1;
 
 	if ((stage.song_beat % (stage.gf_speed * 2)) == 0)
 	{
@@ -1109,8 +1106,8 @@ static void Stage_UpdateHealthIconBounce(boolean playing)
 		stage.icon_angle_p1 = FIXED_DEC(-15,1);
 		stage.icon_angle_p2 = FIXED_DEC(15,1);
 
-		FlxTween_angle(&stage.icon_angle_p1, 0, angle_duration, FlxEase_quadOut);
-		FlxTween_angle(&stage.icon_angle_p2, 0, angle_duration, FlxEase_quadOut);
+		FlxTween_angle(&stage.icon_angle_p1, 0, tween_duration, FlxEase_quadOut);
+		FlxTween_angle(&stage.icon_angle_p2, 0, tween_duration, FlxEase_quadOut);
 	}
 	else
 	{
@@ -1122,14 +1119,14 @@ static void Stage_UpdateHealthIconBounce(boolean playing)
 		stage.icon_angle_p2 = FIXED_DEC(-15,1);
 		stage.icon_angle_p1 = FIXED_DEC(15,1);
 
-		FlxTween_angle(&stage.icon_angle_p2, 0, angle_duration, FlxEase_quadOut);
-		FlxTween_angle(&stage.icon_angle_p1, 0, angle_duration, FlxEase_quadOut);
+		FlxTween_angle(&stage.icon_angle_p2, 0, tween_duration, FlxEase_quadOut);
+		FlxTween_angle(&stage.icon_angle_p1, 0, tween_duration, FlxEase_quadOut);
 	}
 
-	FlxTween_tweenFixed(&stage.icon_scale_p1_x, FIXED_UNIT, scale_duration, FlxEase_quadOut);
-	FlxTween_tweenFixed(&stage.icon_scale_p1_y, FIXED_UNIT, scale_duration, FlxEase_quadOut);
-	FlxTween_tweenFixed(&stage.icon_scale_p2_x, FIXED_UNIT, scale_duration, FlxEase_quadOut);
-	FlxTween_tweenFixed(&stage.icon_scale_p2_y, FIXED_UNIT, scale_duration, FlxEase_quadOut);
+	FlxTween_tweenFixed(&stage.icon_scale_p1_x, FIXED_UNIT, tween_duration, FlxEase_quadOut);
+	FlxTween_tweenFixed(&stage.icon_scale_p1_y, FIXED_UNIT, tween_duration, FlxEase_quadOut);
+	FlxTween_tweenFixed(&stage.icon_scale_p2_x, FIXED_UNIT, tween_duration, FlxEase_quadOut);
+	FlxTween_tweenFixed(&stage.icon_scale_p2_y, FIXED_UNIT, tween_duration, FlxEase_quadOut);
 }
 
 // Function to draw health icons with scaling and rotation
