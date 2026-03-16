@@ -1082,7 +1082,6 @@ void Stage_BlendTexV2(Gfx_Tex *tex, const RECT *src, const RECT_FIXED *dst, fixe
 static void Stage_UpdateHealthIconBounce(boolean playing)
 {
 	u32 tween_duration;
-	u32 actual_bpm = FIXED_DIV(stage.last_bpm,24);
 
 	if (!playing || !(stage.flag & STAGE_FLAG_JUST_STEP))
 		return;
@@ -1090,9 +1089,7 @@ static void Stage_UpdateHealthIconBounce(boolean playing)
 	if (stage.gf_speed == 0 || (stage.song_beat % stage.gf_speed) != 0)
 		return;
 
-	tween_duration = ((60 / actual_bpm) / 4);
-	if (tween_duration == 0)
-		tween_duration = 1;
+	tween_duration = stage.step_crochet;
 
 	if ((stage.song_beat % (stage.gf_speed * 2)) == 0)
 	{
