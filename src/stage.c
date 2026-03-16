@@ -1081,15 +1081,11 @@ void Stage_BlendTexV2(Gfx_Tex *tex, const RECT *src, const RECT_FIXED *dst, fixe
 // Step-synced health icon bounce update (ported from Haxe behavior)
 static void Stage_UpdateHealthIconBounce(boolean playing)
 {
-	u32 tween_duration;
-
 	if (!playing || !(stage.flag & STAGE_FLAG_JUST_STEP))
 		return;
 
 	if (stage.gf_speed == 0 || (stage.song_beat % stage.gf_speed) != 0)
 		return;
-
-	tween_duration = stage.step_crochet;
 
 	if ((stage.song_beat % (stage.gf_speed * 2)) == 0)
 	{
@@ -1101,8 +1097,8 @@ static void Stage_UpdateHealthIconBounce(boolean playing)
 		stage.icon_angle_p1 = FIXED_DEC(-15,1);
 		stage.icon_angle_p2 = FIXED_DEC(15,1);
 
-		FlxTween_angle(&stage.icon_angle_p1, 0, tween_duration, FlxEase_quadOut);
-		FlxTween_angle(&stage.icon_angle_p2, 0, tween_duration, FlxEase_quadOut);
+		FlxTween_angle(&stage.icon_angle_p1, 0, stage.step_crochet, FlxEase_quadOut);
+		FlxTween_angle(&stage.icon_angle_p2, 0, stage.step_crochet, FlxEase_quadOut);
 	}
 	else
 	{
@@ -1114,14 +1110,14 @@ static void Stage_UpdateHealthIconBounce(boolean playing)
 		stage.icon_angle_p2 = FIXED_DEC(-15,1);
 		stage.icon_angle_p1 = FIXED_DEC(15,1);
 
-		FlxTween_angle(&stage.icon_angle_p2, 0, tween_duration, FlxEase_quadOut);
-		FlxTween_angle(&stage.icon_angle_p1, 0, tween_duration, FlxEase_quadOut);
+		FlxTween_angle(&stage.icon_angle_p2, 0, stage.step_crochet, FlxEase_quadOut);
+		FlxTween_angle(&stage.icon_angle_p1, 0, stage.step_crochet, FlxEase_quadOut);
 	}
 
-	FlxTween_tweenFixed(&stage.icon_scale_p1_x, FIXED_UNIT, tween_duration, FlxEase_quadOut);
-	FlxTween_tweenFixed(&stage.icon_scale_p1_y, FIXED_UNIT, tween_duration, FlxEase_quadOut);
-	FlxTween_tweenFixed(&stage.icon_scale_p2_x, FIXED_UNIT, tween_duration, FlxEase_quadOut);
-	FlxTween_tweenFixed(&stage.icon_scale_p2_y, FIXED_UNIT, tween_duration, FlxEase_quadOut);
+	FlxTween_tweenFixed(&stage.icon_scale_p1_x, FIXED_UNIT, stage.step_crochet, FlxEase_quadOut);
+	FlxTween_tweenFixed(&stage.icon_scale_p1_y, FIXED_UNIT, stage.step_crochet, FlxEase_quadOut);
+	FlxTween_tweenFixed(&stage.icon_scale_p2_x, FIXED_UNIT, stage.step_crochet, FlxEase_quadOut);
+	FlxTween_tweenFixed(&stage.icon_scale_p2_y, FIXED_UNIT, stage.step_crochet, FlxEase_quadOut);
 }
 
 // Function to draw health icons with scaling and rotation
