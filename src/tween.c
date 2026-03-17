@@ -16,13 +16,13 @@ fixed_t FlxEase_quadOut(fixed_t t, fixed_t b, fixed_t c, fixed_t d)
     return b + FIXED_MUL(c, term);
 }
 
-static u32 FlxTween_GetCurrentTimeMs(void)
+static fixed_t FlxTween_GetCurrentTime(void)
 {
-    return (u32)((((u64)timer_sec) * 1000) >> FIXED_SHIFT);
+    return timer_sec;
 }
 
 // Function to initiate a tween for fixed-point values
-void FlxTween_tweenFixed(fixed_t *target, fixed_t to, u32 duration, FlxEase ease)
+void FlxTween_tweenFixed(fixed_t *target, fixed_t to, fixed_t duration, FlxEase ease)
 {
     int i;
 
@@ -48,13 +48,13 @@ void FlxTween_tweenFixed(fixed_t *target, fixed_t to, u32 duration, FlxEase ease
         tween->from = *target;
         tween->to = to;
         tween->duration = duration;
-        tween->startTime = FlxTween_GetCurrentTimeMs();
+        tween->startTime = FlxTween_GetCurrentTime();
         tween->ease = ease;
     }
 }
 
 // Function to initiate a tween for rotation angle
-void FlxTween_angle(fixed_t *angle, fixed_t to, u32 duration, FlxEase ease)
+void FlxTween_angle(fixed_t *angle, fixed_t to, fixed_t duration, FlxEase ease)
 {
     FlxTween_tweenFixed(angle, to, duration, ease);
 }
@@ -62,7 +62,7 @@ void FlxTween_angle(fixed_t *angle, fixed_t to, u32 duration, FlxEase ease)
 // Function to update active tweens
 void updateTweens(void)
 {
-    u32 currentTime = FlxTween_GetCurrentTimeMs();
+    fixed_t currentTime = FlxTween_GetCurrentTime();
 
     // Update active tweens
     for (int i = 0; i < numActiveTweens; ++i)
@@ -84,8 +84,8 @@ void updateTweens(void)
         else
         {
             // Tween in progress (normalized 0..1 fixed-point)
-            u32 elapsed = currentTime - tween->startTime;
-            fixed_t t = ((fixed_t)elapsed << FIXED_SHIFT) / (fixed_t)tween->duration;
+            fixed_t elapsed = currentTime - tween->startTime;
+            fixed_t t = FIXED_DIV(elapsed, tween->duration);
             *tween->target = tween->ease(t, tween->from, tween->to - tween->from, FIXED_UNIT);
         }
     }
