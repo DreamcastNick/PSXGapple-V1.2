@@ -320,6 +320,10 @@ static void Stage_ScrollCamera(void)
 //Stage section functions
 static void Stage_ChangeBPM(u16 bpm, u16 step)
 {
+	fixed_t raw_bpm;
+	fixed_t crochet;
+	fixed_t crochet_ms;
+
 	//Update last BPM
 	stage.last_bpm = bpm;
 	
@@ -328,9 +332,14 @@ static void Stage_ChangeBPM(u16 bpm, u16 step)
 		stage.time_base += FIXED_DIV(((fixed_t)step - stage.step_base) << FIXED_SHIFT, stage.step_crochet);
 	stage.step_base = step;
 	
-	//Get new crochet and times
-	stage.step_crochet = ((fixed_t)bpm << FIXED_SHIFT) * 8 / 240; //15/12/24
+	//Get new crochet and times without floating-point math
+	raw_bpm = FIXED_DIV((fixed_t)bpm << FIXED_SHIFT, FIXED_DEC(24,1));
+	crochet = FIXED_DIV(FIXED_DEC(60,1), raw_bpm); //Beat length (seconds)
+	crochet_ms = FIXED_DIV(FIXED_DEC(60000,1), raw_bpm); //Beat length (milliseconds)
+	stage.step_crochet = FIXED_DIV(raw_bpm, FIXED_DEC(30,1));
 	stage.step_time = FIXED_DIV(FIXED_DEC(12,1), stage.step_crochet);
+	stage.icon_scale_duration = FIXED_DIV(crochet_ms, FIXED_DEC(1300,1));
+	stage.icon_angle_duration = FIXED_DIV(crochet_ms, FIXED_DEC(1250,1));
 	
 	//Get new crochet based values
 	stage.early_safe = stage.late_safe = stage.step_crochet / 6; //10 frames
@@ -1097,8 +1106,8 @@ static void Stage_UpdateHealthIconBounce(boolean playing)
 		stage.icon_angle_p1 = FIXED_DEC(-15,1);
 		stage.icon_angle_p2 = FIXED_DEC(15,1);
 
-		FlxTween_angle(&stage.icon_angle_p1, 0, stage.step_crochet, FlxEase_quadOut);
-		FlxTween_angle(&stage.icon_angle_p2, 0, stage.step_crochet, FlxEase_quadOut);
+		FlxTween_angle(&stage.icon_angle_p1, 0, stage.icon_angle_duration, FlxEase_quadOut);
+		FlxTween_angle(&stage.icon_angle_p2, 0, stage.icon_angle_duration, FlxEase_quadOut);
 	}
 	else
 	{
@@ -1110,14 +1119,14 @@ static void Stage_UpdateHealthIconBounce(boolean playing)
 		stage.icon_angle_p2 = FIXED_DEC(-15,1);
 		stage.icon_angle_p1 = FIXED_DEC(15,1);
 
-		FlxTween_angle(&stage.icon_angle_p2, 0, stage.step_crochet, FlxEase_quadOut);
-		FlxTween_angle(&stage.icon_angle_p1, 0, stage.step_crochet, FlxEase_quadOut);
+		FlxTween_angle(&stage.icon_angle_p2, 0, stage.icon_angle_duration, FlxEase_quadOut);
+		FlxTween_angle(&stage.icon_angle_p1, 0, stage.icon_angle_duration, FlxEase_quadOut);
 	}
 
-	FlxTween_tweenFixed(&stage.icon_scale_p1_x, FIXED_UNIT, stage.step_crochet, FlxEase_quadOut);
-	FlxTween_tweenFixed(&stage.icon_scale_p1_y, FIXED_UNIT, stage.step_crochet, FlxEase_quadOut);
-	FlxTween_tweenFixed(&stage.icon_scale_p2_x, FIXED_UNIT, stage.step_crochet, FlxEase_quadOut);
-	FlxTween_tweenFixed(&stage.icon_scale_p2_y, FIXED_UNIT, stage.step_crochet, FlxEase_quadOut);
+	FlxTween_tweenFixed(&stage.icon_scale_p1_x, FIXED_UNIT, stage.icon_scale_duration, FlxEase_quadOut);
+	FlxTween_tweenFixed(&stage.icon_scale_p1_y, FIXED_UNIT, stage.icon_scale_duration, FlxEase_quadOut);
+	FlxTween_tweenFixed(&stage.icon_scale_p2_x, FIXED_UNIT, stage.icon_scale_duration, FlxEase_quadOut);
+	FlxTween_tweenFixed(&stage.icon_scale_p2_y, FIXED_UNIT, stage.icon_scale_duration, FlxEase_quadOut);
 }
 
 // Function to draw health icons with scaling and rotation
@@ -2127,6 +2136,8 @@ static void Stage_LoadChart(void)
 	stage.max_keys = stage.keys * 2;
 	
 	stage.step_crochet = 0;
+	stage.icon_scale_duration = 0;
+	stage.icon_angle_duration = 0;
 	stage.time_base = 0;
 	stage.step_base = 0;
 	stage.section_base = stage.cur_section;

@@ -258,7 +258,7 @@ typedef struct
 	u16 max_keys;
 	
 	fixed_t speed;
-	fixed_t step_crochet, step_time;
+	fixed_t step_crochet, step_time, icon_scale_duration, icon_angle_duration;
 	fixed_t early_safe, late_safe, early_sus_safe, late_sus_safe;
 	fixed_t flash, flashspd;
 
